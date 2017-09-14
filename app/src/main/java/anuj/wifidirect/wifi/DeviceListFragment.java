@@ -16,9 +16,6 @@
 
 package anuj.wifidirect.wifi;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.ListFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -28,6 +25,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,7 +34,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import anuj.wifidirect.*;
+import java.util.ArrayList;
+import java.util.List;
+
+import anuj.wifidirect.R;
 
 /**
  * A ListFragment that displays available peers on discovery and requests the
@@ -44,7 +45,7 @@ import anuj.wifidirect.*;
  */
 public class DeviceListFragment extends ListFragment implements PeerListListener {
 
-    private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
+    private List<WifiP2pDevice> peers = new ArrayList<>();
     ProgressDialog progressDialog = null;
     View mContentView = null;
     private WifiP2pDevice device;
@@ -109,15 +110,16 @@ public class DeviceListFragment extends ListFragment implements PeerListListener
          * @param textViewResourceId
          * @param objects
          */
-        public WiFiPeerListAdapter(Context context, int textViewResourceId,
-                List<WifiP2pDevice> objects) {
+        WiFiPeerListAdapter(Context context, int textViewResourceId,
+                            List<WifiP2pDevice> objects) {
             super(context, textViewResourceId, objects);
             items = objects;
 
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             View v = convertView;
             if (v == null) {
                 LayoutInflater vi = (LayoutInflater) getActivity().getSystemService(
@@ -164,7 +166,6 @@ public class DeviceListFragment extends ListFragment implements PeerListListener
         ((WiFiPeerListAdapter) getListAdapter()).notifyDataSetChanged();
         if (peers.size() == 0) {
             Log.d(WiFiDirectActivity.TAG, "No devices found");
-            return;
         }
 
     }
@@ -195,7 +196,7 @@ public class DeviceListFragment extends ListFragment implements PeerListListener
      * An interface-callback for the activity to listen to fragment interaction
      * events.
      */
-    public interface DeviceActionListener {
+    interface DeviceActionListener {
 
         void showDetails(WifiP2pDevice device);
 
