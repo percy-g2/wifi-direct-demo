@@ -41,12 +41,10 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
 
 import anuj.wifidirect.R;
 import anuj.wifidirect.utils.PermissionsAndroid;
 import anuj.wifidirect.utils.SharedPreferencesHandler;
-import anuj.wifidirect.utils.Utils;
 import anuj.wifidirect.wifi.DeviceListFragment.DeviceActionListener;
 
 /**
@@ -56,7 +54,6 @@ import anuj.wifidirect.wifi.DeviceListFragment.DeviceActionListener;
 public class DeviceDetailFragment extends android.support.v4.app.Fragment implements ConnectionInfoListener {
 
 
-    protected static final int CHOOSE_FILE_RESULT_CODE = 20;
     private View mContentView = null;
     private WifiP2pDevice device;
     private WifiP2pInfo info;
@@ -68,11 +65,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
     public static String WiFiClientIp = "";
     static Boolean ClientCheck = false;
     public static String GroupOwnerAddress = "";
-    static long ActualFilelength = 0;
-    static int Percentage = 0;
-    public static String FolderName = "WiFiDirectDemo";
-
-    private String pickerPath;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -82,11 +74,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (savedInstanceState != null) {
-            if (savedInstanceState.containsKey("picker_path")) {
-                pickerPath = savedInstanceState.getString("picker_path");
-            }
-        }
     }
 
     @Override
@@ -157,18 +144,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        // User has picked an image. Transfer it to group owner i.e peer using
-        // FileTransferService.
-        if (resultCode == getActivity().RESULT_OK) {
-
-        } else {
-            CommonMethods.DisplayToast(getActivity(), "Cancelled Request");
-        }
-    }
-
-    @Override
     public void onConnectionInfoAvailable(final WifiP2pInfo info) {
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
@@ -187,7 +162,7 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
         if (info.groupOwnerAddress.getHostAddress() != null)
             view.setText("Group Owner IP - " + info.groupOwnerAddress.getHostAddress());
         else {
-            CommonMethods.DisplayToast(getActivity(), "Host Address not found");
+            Toast.makeText(getActivity(), "Host Address not found", Toast.LENGTH_SHORT);
         }
         // After the group negotiation, we assign the group owner as the file
         // server. The file server is single threaded, single connection server
@@ -201,7 +176,7 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
 
             //first check for file storage permission
             if (!PermissionsAndroid.getInstance().checkWriteExternalStoragePermission(getActivity())) {
-                Utils.getInstance().showToast("Please enable storage Permission from application storage option");
+                Toast.makeText(getActivity(),"Please enable storage Permission from application storage option", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -250,7 +225,7 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
 
             }
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -305,7 +280,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
 
     private static class FileServerAsyncTask extends AsyncTask<Void, Void, String> {
 
-        //        private TextView statusText;
         private Context mFilecontext;
         private int PORT;
 
@@ -344,22 +318,22 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
                 e.printStackTrace();
                 return null;
             } finally {
-                if(inputstream != null){
-                    try{
+                if (inputstream != null) {
+                    try {
                         inputstream.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-                if(client != null){
-                    try{
+                if (client != null) {
+                    try {
                         client.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
-                if(serverSocket != null){
-                    try{
+                if (serverSocket != null) {
+                    try {
                         serverSocket.close();
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -367,6 +341,7 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
                 }
             }
         }
+
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
@@ -392,46 +367,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
     }
 
 
-
-    public void showprogress(final String task) {
-        if (mProgressDialog == null) {
-            mProgressDialog = new ProgressDialog(getActivity(),
-                    ProgressDialog.THEME_HOLO_LIGHT);
-        }
-        Handler handle = new Handler();
-        final Runnable send = new Runnable() {
-
-            public void run() {
-                // TODO Auto-generated method stub
-                mProgressDialog.setMessage(task);
-                // mProgressDialog.setProgressNumberFormat(null);
-                // mProgressDialog.setProgressPercentFormat(null);
-                mProgressDialog.setIndeterminate(false);
-                mProgressDialog.setMax(100);
-//				mProgressDialog.setCancelable(false);
-                mProgressDialog.setProgressNumberFormat(null);
-                mProgressDialog
-                        .setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                mProgressDialog.show();
-            }
-        };
-        handle.post(send);
-    }
-
-    public static void DismissProgressDialog() {
-        try {
-            if (mProgressDialog != null) {
-                if (mProgressDialog.isShowing()) {
-                    mProgressDialog.dismiss();
-                }
-            }
-        } catch (Exception e) {
-            // TODO: handle exception
-            e.printStackTrace();
-        }
-    }
-
-
     /*
      * Async class that has to be called when connection establish first time. Its main motive is to send blank message
      * to server so that server knows the IP address of client to send files Bi-Directional.
@@ -448,8 +383,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
 
         @Override
         protected String doInBackground(String... params) {
-            // TODO Auto-generated method stub
-            CommonMethods.e("On first Connect", "On first Connect");
 
             Intent serviceIntent = new Intent(getActivity(),
                     FileTransferService.class);
@@ -480,13 +413,9 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
             super.onPostExecute(result);
             if (result != null) {
                 if (result.equalsIgnoreCase("success")) {
-                    CommonMethods.e("On first Connect",
-                            "On first Connect sent to asynctask");
                     ClientCheck = true;
                 }
             }
-
         }
-
     }
 }

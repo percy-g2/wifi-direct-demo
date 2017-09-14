@@ -38,8 +38,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-
-
 import java.util.List;
 
 import anuj.wifidirect.R;
@@ -297,9 +295,9 @@ public class WiFiDirectActivity extends AppCompatActivity implements ChannelList
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         List<Fragment> listOfFragments = getSupportFragmentManager().getFragments();
 
-        if(listOfFragments.size()>=1){
+        if (listOfFragments.size() >= 1) {
             for (Fragment fragment : listOfFragments) {
-                if(fragment instanceof DeviceDetailFragment){
+                if (fragment instanceof DeviceDetailFragment) {
                     fragment.onActivityResult(requestCode, resultCode, data);
                 }
             }

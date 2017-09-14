@@ -26,7 +26,7 @@ import android.net.wifi.p2p.WifiP2pManager.Channel;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 import android.util.Log;
 
-import anuj.wifidirect.*;
+import anuj.wifidirect.R;
 
 /**
  * A BroadcastReceiver that notifies of important wifi p2p events.
@@ -38,12 +38,12 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
     private WiFiDirectActivity activity;
 
     /**
-     * @param manager WifiP2pManager system service
-     * @param channel Wifi p2p channel
+     * @param manager  WifiP2pManager system service
+     * @param channel  Wifi p2p channel
      * @param activity activity associated with the receiver
      */
     public WiFiDirectBroadcastReceiver(WifiP2pManager manager, Channel channel,
-            WiFiDirectActivity activity) {
+                                       WiFiDirectActivity activity) {
         super();
         this.manager = manager;
         this.channel = channel;

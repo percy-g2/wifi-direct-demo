@@ -3,10 +3,8 @@
 package anuj.wifidirect.wifi;
 
 import android.app.IntentService;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
-import android.util.Log;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -23,15 +21,11 @@ public class FileTransferService extends IntentService {
 
     public static final int SOCKET_TIMEOUT = 5000;
     public static final String ACTION_SEND_FILE = "com.example.android.wifidirect.SEND_FILE";
-    public static final String EXTRAS_FILE_PATH = "file_url";
     public static final String EXTRAS_GROUP_OWNER_ADDRESS = "go_host";
     public static final String EXTRAS_GROUP_OWNER_PORT = "go_port";
 
     public static int PORT = 8888;
     public static final String inetaddress = "inetaddress";
-    public static final int ByteSize = 512;
-    public static final String Extension = "extension";
-    public static final String Filelength = "filelength";
 
     public FileTransferService(String name) {
         super(name);
@@ -54,12 +48,9 @@ public class FileTransferService extends IntentService {
      */
     @Override
     protected void onHandleIntent(Intent intent) {
-
-        Context context = getApplicationContext();
         if (intent.getAction().equals(ACTION_SEND_FILE)) {
             String host = intent.getExtras().getString(EXTRAS_GROUP_OWNER_ADDRESS);
             Socket socket = new Socket();
-            int port = intent.getExtras().getInt(EXTRAS_GROUP_OWNER_PORT);
             DataOutputStream stream = null;
             try {
                 socket.bind(null);
@@ -67,7 +58,7 @@ public class FileTransferService extends IntentService {
                 stream = new DataOutputStream(socket.getOutputStream());
                 stream.writeUTF("a string");
             } catch (Exception e) {
-                Log.e(WiFiDirectActivity.TAG, e.getMessage());
+                e.printStackTrace();
             } finally {
                 if (stream != null) {
                     try {
@@ -84,7 +75,6 @@ public class FileTransferService extends IntentService {
                     }
                 }
             }
-
         }
     }
 }
