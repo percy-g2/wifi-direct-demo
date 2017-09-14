@@ -3,8 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/WiFiDIrectDemo.iml" filepath="$PROJECT_DIR$/WiFiDIrectDemo.iml" />
-      <module fileurl="file://$PROJECT_DIR$/WiFiDIrectDemo-master.iml" filepath="$PROJECT_DIR$/WiFiDIrectDemo-master.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/wifi-direct-demo.iml" filepath="$PROJECT_DIR$/wifi-direct-demo.iml" />
     </modules>
   </component>
 </project>

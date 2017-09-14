@@ -36,14 +36,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.InterstitialAd;
-import com.kbeanie.multipicker.api.FilePicker;
-import com.kbeanie.multipicker.api.Picker;
-import com.kbeanie.multipicker.api.callbacks.FilePickerCallback;
-import com.kbeanie.multipicker.api.entity.ChosenFile;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -61,9 +53,8 @@ import anuj.wifidirect.wifi.DeviceListFragment.DeviceActionListener;
  * A fragment that manages a particular peer and allows interaction with device
  * i.e. setting up network connection and transferring data.
  */
-public class DeviceDetailFragment extends android.support.v4.app.Fragment implements ConnectionInfoListener, FilePickerCallback {
+public class DeviceDetailFragment extends android.support.v4.app.Fragment implements ConnectionInfoListener {
 
-    static InterstitialAd mInterstitialAd;
 
     protected static final int CHOOSE_FILE_RESULT_CODE = 20;
     private View mContentView = null;
@@ -81,7 +72,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
     static int Percentage = 0;
     public static String FolderName = "WiFiDirectDemo";
 
-    private FilePicker filePicker;
     private String pickerPath;
 
     @Override
@@ -104,16 +94,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
 
         mContentView = inflater.inflate(R.layout.device_detail, null);
 
-        mInterstitialAd = new InterstitialAd(getActivity());
-        mInterstitialAd.setAdUnitId(getString(R.string.fullscreen_ad_unit_id));
-        mInterstitialAd.setAdListener(new AdListener() {
-            @Override
-            public void onAdClosed() {
-                requestNewInterstitial();
-            }
-        });
-
-        requestNewInterstitial();
 
         mContentView.findViewById(R.id.btn_connect).setOnClickListener(new View.OnClickListener() {
 
@@ -176,38 +156,13 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
         return mContentView;
     }
 
-    private void requestNewInterstitial() {
-        AdRequest adRequest = new AdRequest.Builder()
-                .build();
-
-        mInterstitialAd.loadAd(adRequest);
-    }
-
-    private void checkExternalStoragePermission() {
-        boolean isExternalStorage = PermissionsAndroid.getInstance().checkWriteExternalStoragePermission(getActivity());
-        if (!isExternalStorage) {
-            PermissionsAndroid.getInstance().requestForWriteExternalStoragePermission(getActivity());
-        } else {
-            pickFilesSingle();
-        }
-    }
-
-    private void pickFilesSingle() {
-        filePicker = new FilePicker(getActivity());
-        filePicker.setFilePickerCallback(this);
-        filePicker.setFolderName(getActivity().getString(R.string.app_name));
-        filePicker.pickFile();
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         // User has picked an image. Transfer it to group owner i.e peer using
         // FileTransferService.
         if (resultCode == getActivity().RESULT_OK) {
-            if (requestCode == Picker.PICK_FILE) {
-                filePicker.submit(data);
-            }
+
         } else {
             CommonMethods.DisplayToast(getActivity(), "Cancelled Request");
         }
@@ -347,80 +302,6 @@ public class DeviceDetailFragment extends android.support.v4.app.Fragment implem
      * the stream.
      */
     static Handler handler;
-
-    @Override
-    public void onFilesChosen(List<ChosenFile> list) {
-        ChosenFile file = list.get(0);
-        String extension = "";
-        int i = list.get(0).getDisplayName().lastIndexOf('.');
-        if (i > 0) {
-            extension = list.get(0).getDisplayName().substring(i + 1);
-        }
-
-        ActualFilelength = file.getSize();
-        ;
-
-       // TextView statusText = (TextView) mContentView.findViewById(R.id.status_text);
-       // statusText.setText("Sending: " + file.getOriginalPath());
-
-        Intent serviceIntent = new Intent(getActivity(), FileTransferService.class);
-        serviceIntent.setAction(FileTransferService.ACTION_SEND_FILE);
-        serviceIntent.putExtra(FileTransferService.EXTRAS_FILE_PATH, file.getQueryUri());
-                /*
-                 * Choose on which device file has to send weather its server or client
-    	         */
-        String Ip = SharedPreferencesHandler.getStringValues(
-                getActivity(), getString(R.string.pref_WiFiClientIp));
-        String OwnerIp = SharedPreferencesHandler.getStringValues(
-                getActivity(), getString(R.string.pref_GroupOwnerAddress));
-        if (!TextUtils.isEmpty(OwnerIp) && OwnerIp.length() > 0) {
-            String host = null;
-            int sub_port = -1;
-
-            String ServerBool = SharedPreferencesHandler.getStringValues(getActivity(), getString(R.string.pref_ServerBoolean));
-            if (!TextUtils.isEmpty(ServerBool) && ServerBool.equalsIgnoreCase("true") && !TextUtils.isEmpty(Ip)) {
-                host = Ip;
-                sub_port = FileTransferService.PORT;
-                serviceIntent
-                        .putExtra(
-                                FileTransferService.EXTRAS_GROUP_OWNER_ADDRESS,
-                                Ip);
-
-            } else {
-                FileTransferService.PORT = 8888;
-                host = OwnerIp;
-                sub_port = FileTransferService.PORT;
-                serviceIntent.putExtra(
-                        FileTransferService.EXTRAS_GROUP_OWNER_ADDRESS,
-                        OwnerIp);
-            }
-            serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_PORT, FileTransferService.PORT);
-
-            serviceIntent.putExtra(FileTransferService.Extension, file.getDisplayName());
-
-            serviceIntent.putExtra(FileTransferService.Filelength,
-                    String.valueOf(ActualFilelength));
-
-           /* if (sub_port != -1) {
-                showprogress("Sending...");
-                getActivity().startService(serviceIntent);
-            } else {
-                CommonMethods.DisplayToast(getActivity(),
-                        "Host Address not found, Please Re-Connect");
-                DismissProgressDialog();
-            }*/
-
-        } else {
-            /*DismissProgressDialog();
-            CommonMethods.DisplayToast(getActivity(),
-                    "Host Address not found, Please Re-Connect");*/
-        }
-    }
-
-    @Override
-    public void onError(String s) {
-
-    }
 
     private static class FileServerAsyncTask extends AsyncTask<Void, Void, String> {
 
